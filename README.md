@@ -2,11 +2,9 @@
 This is an educational project on data cleaning and preparation using SQL. The original database in CSV format is located in the file club_member_info.csv. Here, we will explore the steps that need to be applied to obtain a cleansed version of the dataset.
 
 ## Data Introduction
-
 ```sql
 SELECT * FROM club_member_info cmi LIMIT 10;
 ```
-
 The result:
 |full_name|age|martial_status|email|phone|full_address|job_title|membership_date|
 |---------|---|--------------|-----|-----|------------|---------|---------------|
@@ -20,3 +18,70 @@ The result:
 |   Joete Cudiff|51|divorced|jcudiff7@ycombinator.com|616-617-0965|975 Dwight Plaza,Grand Rapids,Michigan|Research Nurse|11/16/2014|
 |mendie alexandrescu|46|single|malexandrescu8@state.gov|504-918-4753|34 Delladonna Terrace,New Orleans,Louisiana|Systems Administrator III|3/12/1921|
 | fey kloss|52|married|fkloss9@godaddy.com|808-177-0318|8976 Jackson Park,Honolulu,Hawaii|Chemical Engineer|11/5/2014|
+
+## Cleanning Documentation
+### 1. Create new table for cleaning
+```sql
+-- club_member_info definition
+CREATE TABLE club_member_info (
+	full_name VARCHAR(50),
+	age INTEGER,
+	martial_status VARCHAR(50),
+	email VARCHAR(50),
+	phone VARCHAR(50),
+	full_address VARCHAR(50),
+	job_title VARCHAR(50),
+	membership_date VARCHAR(50)
+);
+```
+### 2. Copy all values from original table
+```sql
+INSERT INTO club_member_info_cleaned
+SELECT * FROM club_member_info;
+```
+
+### 3. Format full name
+```sql
+UPDATE club_member_info_cleaned SET full_name = TRIM(full_name);
+UPDATE club_member_info_cleaned SET full_name = UPPER(full_name);
+```
+
+### 4. Mark error age values with 'unknown' value
+```sql
+UPDATE club_member_info_cleaned SET age = 'unknown' WHERE age > 100 OR age = '';
+```
+
+### 5. Correct martial status
+```sql
+UPDATE club_member_info_cleaned SET martial_status = 'divorced' WHERE martial_status = 'divored';
+UPDATE club_member_info_cleaned SET martial_status = 'unknown' WHERE martial_status = '';
+```
+
+### 6. Check empty email
+```SQL
+SELECT COUNT(email) FROM club_member_info_cleaned WHERE email = '';
+```
+
+### 7. Mark error phone numbers with 'unknown' value
+```sql
+UPDATE club_member_info_cleaned SET phone = 'unknown' WHERE NOT(phone LIKE '___-___-____');
+```
+
+### 8. Format full address
+```sql
+UPDATE club_member_info_cleaned SET full_address = TRIM(REPLACE (full_address,',',', '));
+UPDATE club_member_info_cleaned SET full_address = REPLACE (full_address,'  ',' ') WHERE full_address LIKE '%  %';
+```
+
+The result:
+|full_address_original|full_name_cleaned|
+|------------|-----------------|
+|3226 Eastlawn Pass,Temple,Texas|3226 Eastlawn Pass, Temple, Texas|
+|4 Harbort Avenue,Fayetteville,North Carolina|4 Harbort Avenue, Fayetteville, North Carolina|
+
+### 9. Mark empty job title with 'unknown' value
+```sql
+UPDATE club_member_info_cleaned SET job_title = 'unknown' WHERE job_title ='';
+```
+
+### 10. 
